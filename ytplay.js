@@ -26,68 +26,49 @@ function ytPlay(text) {
         var v2 = v[Math.floor(Math.random() * v.length)].v;
         let url = "https://www.youtube.com/watch?v=" + v2;
         let config = {
+          k_query: "https://www.youtube.be/" + url,
+          k_page: "mp3",
+          hl: "en",
+          q_auto: 1,
+        };
+        let config2 = {
           url: "https://www.youtube.be/" + url,
           q_auto: 0,
           ajax: 1,
         };
         axios("https://www.y2mate.com/mates/en68/analyze/ajax", {
           method: "POST",
-          data: new URLSearchParams(Object.entries(config)),
+          data: new URLSearchParams(Object.entries(config2)),
           headers: headerss,
         }).then(({ data }) => {
           const $ = cheerio.load(data.result);
           let img = $("div.thumbnail.cover > a > img").attr("src");
-          let title = $("div.thumbnail.cover > div > b").text();
-          let size = $(
-            "#mp4 > table > tbody > tr:nth-child(3) > td:nth-child(2)"
-          ).text();
-          let size_mp3 = $(
-            "#audio > table > tbody > tr:nth-child(1) > td:nth-child(2)"
-          ).text();
-          let id = /var k__id = "(.*?)"/.exec(data.result)[1];
-          let idElement = $('input[data-extractor="youtube"]');
-          let vid = idElement.attr("data-id");
-          let configs = {
-            type: "youtube",
-            _id: id,
-            v_id: vid,
-            ajax: "1",
-            token: "",
-            ftype: "mp4",
-            fquality: 480,
-          };
-          axios("https://www.y2mate.com/mates/en68/convert", {
+          axios("https://www.y2mate.com/mates/analyzeV2/ajax", {
             method: "POST",
-            data: new URLSearchParams(Object.entries(configs)),
+            data: new URLSearchParams(Object.entries(config)),
             headers: headerss,
           }).then(({ data }) => {
-            const $ = cheerio.load(data.result);
-            let link = $("div > a").attr("href");
-            let configss = {
-              type: "youtube",
-              _id: id,
-              v_id: vid,
-              ajax: "1",
-              token: "",
-              ftype: "mp3",
-              fquality: 128,
+            const convertConfig = {
+              vid: data.vid,
+              k: data.links.mp3.mp3128.k,
             };
-            axios("https://www.y2mate.com/mates/en68/convert", {
+            let size = data.links.mp3.mp3128.size;
+            axios("https://www.y2mate.com/mates/convertV2/index", {
               method: "POST",
-              data: new URLSearchParams(Object.entries(configss)),
+              data: new URLSearchParams(Object.entries(convertConfig)),
               headers: headerss,
-            }).then(({ data }) => {
-              const $ = cheerio.load(data.result);
-              let audio = $("div > a").attr("href");
-              resolve({
-                id: vid,
-                url: url,
-                title: title,
-                thumb: img,
-                size_mp3: size_mp3,
-                link: audio,
-              });
-            });
+            })
+              .then((response) => {
+                resolve({
+                  status: response.data.status,
+                  title: response.data.title,
+                  ftype: response.data.ftype,
+                  thumb: img,
+                  size_mp3: size,
+                  link: response.data.dlink,
+                });
+              })
+              .catch(reject);
           });
         });
       })
@@ -95,7 +76,7 @@ function ytPlay(text) {
   });
 }
 
-ytPlay("abadi speedup")
+ytPlay("abadi speed up")
   .then((result) => {
     console.log(result);
   })
