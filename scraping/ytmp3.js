@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 const cheerio = require("cheerio");
 
-function ytMP4(url) {
+function ytMP3(url) {
   return new Promise((resolve, reject) => {
     let configd = {
       k_query: url,
@@ -50,6 +50,7 @@ function ytMP4(url) {
               status: 200,
               title: data.title,
               ftype: data.ftype,
+              quality: data.fquality,
               thumb: img,
               size_mp3: size,
               link: data.dlink,
@@ -61,7 +62,7 @@ function ytMP4(url) {
   });
 }
 
-ytMP4("https://youtu.be/j_MlBCb9-m8?si=g6KsGM6cHNotU-rH")
+ytMP3("https://youtu.be/j_MlBCb9-m8?si=g6KsGM6cHNotU-rH")
   .then((result) => {
     console.log(result);
   })
