@@ -1,5 +1,6 @@
 const { default: axios } = require("axios");
 const cheerio = require("cheerio");
+const Cookies = require("js-cookie");
 
 function ytPlay(text) {
   return new Promise((resolve, reject) => {
@@ -8,14 +9,17 @@ function ytPlay(text) {
       k_page: "mp3",
       q_auto: 1,
     };
+    const csrftoken = Cookies.get("csrftoken");
     let headerss = {
       "sec-ch-ua":
         '" Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"',
       "user-agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      "X-CSRFToken": csrftoken,
       Cookie:
         'PHPSESSID=6jo2ggb63g5mjvgj45f612ogt7; _ga=GA1.2.405896420.1625200423; _gid=GA1.2.2135261581.1625200423; _PN_SBSCRBR_FALLBACK_DENIED=1625200785624; MarketGidStorage={"0":{},"C702514":{"page":5,"time":1625200846733}}',
     };
+
     axios("https://www.y2mate.com/mates/analyzeV2/ajax", {
       method: "POST",
       data: new URLSearchParams(Object.entries(configd)),

@@ -52,7 +52,9 @@ function facebook(url) {
   });
 }
 
-facebook("https://fb.watch/7B5KBCgdO3")
+facebook(
+  "https://www.facebook.com/reel/616135183930816?mibextid=nb1MFm3jZYALyyMy"
+)
   .then((result) => {
     console.log(result);
   })
