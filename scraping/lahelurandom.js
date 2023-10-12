@@ -1,28 +1,46 @@
 const puppeteer = require("puppeteer");
-const cheerio = require("cheerio");
 
 async function lahelu() {
-  const url = "https://lahelu.com/";
+  const url = "https://lahelu.com/shuffle";
   const browser = await puppeteer.launch({
     headless: true,
-    args: ["--no-sandbox"],
   });
   const page = await browser.newPage();
-  await page.goto(url, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector("video");
-  const videoUrl = await page.evaluate(() => {
-    const videoElement = document.querySelector("video");
-    return videoElement ? videoElement.src : null;
-  });
-  const content = await page.content();
-  const $ = cheerio.load(content);
-  const postElements = $(".PostItem_wrapper__Y0x_H");
-  const randomIndex = Math.floor(Math.random() * postElements.length);
-  const randomPostElement = postElements[randomIndex];
-  const title = $(randomPostElement).find(".Typography_overflow__R5BlX").text();
-  console.log(title);
-  console.log(videoUrl);
-  await browser.close();
+
+  try {
+    await page.goto(url, {
+      waitUntil: "networkidle2",
+    });
+
+    const result = await page.evaluate(() => {
+      const data = {
+        judul:
+          document.querySelector("article > header > h1")?.textContent ||
+          "No title found",
+        link: document.querySelector(
+          "div.PostItem_mediaWrapper__As_jS > div > video"
+        )
+          ? document
+              .querySelector("div.PostItem_mediaWrapper__As_jS > div > video")
+              .getAttribute("src")
+          : document.querySelector(
+              "div.PostItem_mediaWrapper__As_jS > div > img"
+            )
+          ? document
+              .querySelector("div.PostItem_mediaWrapper__As_jS > div > img")
+              .getAttribute("src")
+          : null,
+      };
+      return data;
+    });
+
+    console.log(result);
+  } catch (error) {
+    console.error("An error occurred:", error);
+  } finally {
+    await page.close();
+    await browser.close();
+  }
 }
 
 lahelu();
