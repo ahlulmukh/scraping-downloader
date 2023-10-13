@@ -1,37 +1,27 @@
-const puppeteer = require("puppeteer");
+const { chromium } = require("playwright");
 
 async function lahelu() {
   const url = "https://lahelu.com/shuffle";
-  const browser = await puppeteer.launch({
-    headless: true,
-  });
-  const page = await browser.newPage();
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
 
   try {
     await page.goto(url, {
-      waitUntil: "networkidle2",
+      waitUntil: "domcontentloaded",
     });
+    await page.waitForTimeout(2000);
 
     const result = await page.evaluate(() => {
-      const data = {
-        judul:
-          document.querySelector("article > header > h1")?.textContent ||
-          "No title found",
-        link: document.querySelector(
-          "div.PostItem_mediaWrapper__As_jS > div > video"
-        )
-          ? document
-              .querySelector("div.PostItem_mediaWrapper__As_jS > div > video")
-              .getAttribute("src")
-          : document.querySelector(
-              "div.PostItem_mediaWrapper__As_jS > div > img"
-            )
-          ? document
-              .querySelector("div.PostItem_mediaWrapper__As_jS > div > img")
-              .getAttribute("src")
-          : null,
-      };
-      return data;
+      const titleElement = document.querySelector("article header h1");
+      const title = titleElement ? titleElement.textContent : "No title found";
+
+      const mediaElement = document.querySelector(
+        "div.PostItem_mediaWrapper__As_jS video, div.PostItem_mediaWrapper__As_jS img"
+      );
+      const link = mediaElement ? mediaElement.getAttribute("src") : null;
+
+      return { judul: title, link };
     });
 
     console.log(result);
